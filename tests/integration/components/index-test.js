@@ -66,5 +66,22 @@ module('Integration | Component | index', function(hooks) {
 
       await render(hbs('some-stuff \n\n other stuff {{foo-bar}}', { moduleName: 'app/templates/bar.hbs' }));
     });
+
+    test('can access simplified stack from global (without modifying source helper/component/modifier)', async function(assert) {
+      assert.expect(1);
+
+      this.owner.register('template:components/foo-bar', hbs('\n {{invoke-me}}', { moduleName: 'app/templates/components/foo-bar.hbs' }));
+
+      this.owner.register('helper:invoke-me', helper((params, hash) => {
+        let stack = self._templateInvocationInfo.getInvocationStack(hash);
+
+        assert.deepEqual(stack, [
+          'app/templates/components/foo-bar.hbs @ L2:C1',
+          'app/templates/bar.hbs @ L3:C13'
+        ]);
+      }));
+
+      await render(hbs('some-stuff \n\n other stuff {{foo-bar}}', { moduleName: 'app/templates/bar.hbs' }));
+    });
   });
 });

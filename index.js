@@ -22,4 +22,10 @@ module.exports = {
       }
     };
   },
+
+  included() {
+    this._super.included.apply(this, arguments);
+
+    this.import('vendor/ember-template-invocation-location/index.js');
+  },
 };
