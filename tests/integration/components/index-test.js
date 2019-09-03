@@ -2,7 +2,7 @@ import { module, test } from 'qunit';
 import { setupRenderingTest } from 'ember-qunit';
 import { render } from '@ember/test-helpers';
 import hbs from 'htmlbars-inline-precompile';
-import getInvocationLocation from 'ember-template-invocation-location';
+import { getInvocationLocation, getInvocationStack } from 'ember-template-invocation-location';
 import { helper } from '@ember/component/helper';
 
 module('Integration | Component | index', function(hooks) {
@@ -20,5 +20,51 @@ module('Integration | Component | index', function(hooks) {
     assert.verifySteps([
       'app/foo/bar.hbs @ L3:C13',
     ]);
+  });
+
+  test('can determine parent invocation site', async function(assert) {
+    assert.expect(1);
+
+    this.owner.register('template:components/foo-bar', hbs('\n {{invoke-me}}', { moduleName: 'app/templates/components/foo-bar.hbs' }));
+
+    this.owner.register('helper:invoke-me', helper((params, hash) => {
+      let location = getInvocationLocation(hash);
+
+      assert.deepEqual(location, {
+        isTemplateInvocationInfo: true,
+        template: 'app/templates/components/foo-bar.hbs',
+        line: 2,
+        column: 1,
+        parent: {
+          isTemplateInvocationInfo: true,
+          template: 'app/templates/bar.hbs',
+          line: 3,
+          column: 13,
+          parent: undefined,
+        }
+      });
+    }));
+
+    await render(hbs('some-stuff \n\n other stuff {{foo-bar}}', { moduleName: 'app/templates/bar.hbs' }));
+  });
+
+  module('getInvocationStack', function() {
+
+    test('can access simplified stack', async function(assert) {
+      assert.expect(1);
+
+      this.owner.register('template:components/foo-bar', hbs('\n {{invoke-me}}', { moduleName: 'app/templates/components/foo-bar.hbs' }));
+
+      this.owner.register('helper:invoke-me', helper((params, hash) => {
+        let stack = getInvocationStack(hash);
+
+        assert.deepEqual(stack, [
+          'app/templates/components/foo-bar.hbs @ L2:C1',
+          'app/templates/bar.hbs @ L3:C13'
+        ]);
+      }));
+
+      await render(hbs('some-stuff \n\n other stuff {{foo-bar}}', { moduleName: 'app/templates/bar.hbs' }));
+    });
   });
 });
