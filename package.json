@@ -5,9 +5,9 @@
   "keywords": [
     "ember-addon"
   ],
-  "repository": "",
+  "repository": "https://github.com/rwjblue/ember-template-invocation-location",
   "license": "MIT",
-  "author": "",
+  "author": "Robert Jackson <me@rwjblue.com>",
   "directories": {
     "doc": "doc",
     "test": "tests"
