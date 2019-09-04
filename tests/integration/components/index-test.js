@@ -87,6 +87,32 @@ module('Integration | Component | index', function(hooks) {
 
         await render(hbs('some-stuff \n\n other stuff {{foo-bar}}', { moduleName: 'app/templates/bar.hbs' }));
       });
+
+      test('properly detects dynamic angle bracket component invocations', async function(assert) {
+        this.owner.register('template:components/x-outer', hbs('{{yield (hash foo=(component "x-inner"))}}', { moduleName: 'app/templates/components/x-outer.hbs' }));
+        this.owner.register('template:components/x-inner', hbs('\n    {{invoke-me}}', { moduleName: 'app/templates/components/x-inner.hbs' }));
+
+        this.owner.register('helper:invoke-me', helper((params, hash) => {
+          let location = getInvocationLocation(hash);
+
+          assert.deepEqual(location, {
+            isTemplateInvocationInfo: true,
+            template: 'app/templates/components/x-inner.hbs',
+            line: 2,
+            column: 4,
+            parent: {
+              isTemplateInvocationInfo: true,
+              template: 'app/templates/bar.hbs',
+              line: 1,
+              column: 20,
+              parent: undefined,
+            }
+          });
+
+        }));
+
+        await render(hbs('<XOuter as |things|>{{things.foo}}</XOuter>', { moduleName: 'app/templates/bar.hbs' }));
+      });
     }
   });
 
