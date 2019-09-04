@@ -40,6 +40,14 @@ module('Integration | Component | index', function(hooks) {
     });
 
     if (DEBUG) {
+      test('works within component template GH#11', async function(assert) {
+        this.owner.register('template:components/x-foo', hbs`{{@debugTemplateInvocationSite.template}} @ L{{@debugTemplateInvocationSite.line}}:C{{@debugTemplateInvocationSite.column}}`);
+
+        await render(hbs('some-stuff \n\n other stuff <div data-test>{{x-foo}}</div>', { moduleName: 'app/foo/bar.hbs' }));
+
+        assert.equal(this.element.querySelector('[data-test]').textContent, 'app/foo/bar.hbs @ L3:C28');
+      });
+
       test('allows helpers to access the template invocation location', async function(assert) {
         this.owner.register('helper:invoke-me', helper((params, hash) => {
           let location = getInvocationLocation(hash);
