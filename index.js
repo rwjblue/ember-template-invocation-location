@@ -1,10 +1,16 @@
 'use strict';
 
+function isProduction() {
+  return process.env.EMBER_ENV === 'production';
+}
+
 module.exports = {
   name: require('./package').name,
 
   setupPreprocessorRegistry(type, registry) {
-    registry.add('htmlbars-ast-plugin', this._buildPlugin());
+    if (!isProduction()) {
+      registry.add('htmlbars-ast-plugin', this._buildPlugin());
+    }
   },
 
   _buildPlugin() {
@@ -26,6 +32,8 @@ module.exports = {
   included() {
     this._super.included.apply(this, arguments);
 
-    this.import('vendor/ember-template-invocation-location/index.js');
+    if (!isProduction()) {
+      this.import('vendor/ember-template-invocation-location/index.js');
+    }
   },
 };

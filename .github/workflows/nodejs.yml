@@ -40,12 +40,28 @@ jobs:
     - name: test
       run: yarn test
 
+  production-test:
+    name: Production Tests
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v1
+    - uses: actions/setup-node@v1
+      with:
+        node-version: 8.x
+    - name: install yarn
+      run: npm install -g yarn
+    - name: install dependencies
+      run: yarn install
+    - name: test
+      run: yarn test:prod
+
   try-scenarios:
     name: ${{ matrix.ember-try-scenario }}
 
     runs-on: ubuntu-latest
 
-    needs: test
+    needs: [test, production-test]
 
     strategy:
       matrix:
