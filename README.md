@@ -109,7 +109,7 @@ A helper (using `helper` from `@ember/component/helper`) would look like:
 ```js
 // app/helpers/something.js
 export default helper(function(positional, named) {
-  let loc = window.getInvocationLocation(named);
+  let loc = window._templateInvocationInfo.getInvocationLocation(named);
 
   // ...snip... do something with `loc` 😃
 });
@@ -122,7 +122,7 @@ A helper (using `default` from `@ember/component/helper`) would look like:
 export default Helper.extend({
 
   compute(positional, named) {
-    let loc = window.getInvocationLocation(named);
+    let loc = window._templateInvocationInfo.getInvocationLocation(named);
 
     // ...snip... do something with `loc` 😃
   }
@@ -141,7 +141,7 @@ setModifierManager(
     createModifier() {},
 
     installModifier(_state, element, args) {
-      let loc = window.getInvocationLocation(named);
+      let loc = window._templateInvocationInfo.getInvocationLocation(named);
 
       // ...snip... do something with `loc` 😃
     },
@@ -161,7 +161,7 @@ setModifierManager(
 export default Component.extend({
   didInsertElement() {
     this._super(...arguments);
-      let loc = window.getInvocationLocation(named);
+      let loc = window._templateInvocationInfo.getInvocationLocation(named);
 
       // ...snip... do something with `loc` 😃
   }
@@ -177,7 +177,7 @@ export default class extends Component {
   constructor() {
     super();
 
-    let loc = window.getInvocationLocation(named);
+    let loc = window._templateInvocationInfo.getInvocationLocation(named);
 
     // ...snip... do something with `loc` 😃
   }
