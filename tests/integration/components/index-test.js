@@ -9,6 +9,24 @@ import { helper } from '@ember/component/helper';
 module('Integration | Component | index', function(hooks) {
   setupRenderingTest(hooks);
 
+  module('AST transform', function() {
+    if (DEBUG) {
+      test('does not add named arguments to `yield` GH#9', async function(assert) {
+        assert.expect(1);
+
+        this.owner.register('template:components/x-foo', hbs('{{yield}}', { moduleName: 'app/templates/components/x-foo.hbs'}));
+        this.owner.register('helper:invoke-me', helper((params, hash) => {
+          let stack = getInvocationStack(hash);
+
+          assert.deepEqual(stack, [ 'app/templates/test.hbs @ L1:C10' ]);
+        }));
+
+        await render(hbs('{{#x-foo}}{{invoke-me}}{{/x-foo}}', { moduleName: 'app/templates/test.hbs' }));
+
+      });
+    }
+  });
+
   module('getInvocationLocation', function() {
     test('does not error', async function(assert) {
       this.owner.register('helper:invoke-me', helper((params, hash) => {
