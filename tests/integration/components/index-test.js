@@ -14,152 +14,224 @@ module('Integration | Component | index', function(hooks) {
       test('does not add named arguments to `yield` GH#9', async function(assert) {
         assert.expect(1);
 
-        this.owner.register('template:components/x-foo', hbs('{{yield}}', { moduleName: 'app/templates/components/x-foo.hbs'}));
-        this.owner.register('helper:invoke-me', helper((params, hash) => {
-          let stack = getInvocationStack(hash);
+        this.owner.register(
+          'template:components/x-foo',
+          hbs('{{yield}}', { moduleName: 'app/templates/components/x-foo.hbs' })
+        );
+        this.owner.register(
+          'helper:invoke-me',
+          helper((params, hash) => {
+            let stack = getInvocationStack(hash);
 
-          assert.deepEqual(stack, [ 'app/templates/test.hbs @ L1:C10' ]);
-        }));
+            assert.deepEqual(stack, ['app/templates/test.hbs @ L1:C10']);
+          })
+        );
 
-        await render(hbs('{{#x-foo}}{{invoke-me}}{{/x-foo}}', { moduleName: 'app/templates/test.hbs' }));
-
+        await render(
+          hbs('{{#x-foo}}{{invoke-me}}{{/x-foo}}', { moduleName: 'app/templates/test.hbs' })
+        );
       });
     }
   });
 
   module('getInvocationLocation', function() {
     test('does not error', async function(assert) {
-      this.owner.register('helper:invoke-me', helper((params, hash) => {
-        let location = getInvocationLocation(hash);
+      this.owner.register(
+        'helper:invoke-me',
+        helper((params, hash) => {
+          let location = getInvocationLocation(hash);
 
-        assert.ok(!!location, 'return value from getInvocationLocation is not falsey');
-        assert.equal(typeof location, 'object', 'return value from getInvocationLocation is an object');
-      }));
+          assert.ok(!!location, 'return value from getInvocationLocation is not falsey');
+          assert.equal(
+            typeof location,
+            'object',
+            'return value from getInvocationLocation is an object'
+          );
+        })
+      );
 
-      await render(hbs('some-stuff \n\n other stuff {{invoke-me}}', { moduleName: 'app/foo/bar.hbs' }));
+      await render(
+        hbs('some-stuff \n\n other stuff {{invoke-me}}', { moduleName: 'app/foo/bar.hbs' })
+      );
     });
 
     if (DEBUG) {
       test('works within component template GH#11', async function(assert) {
-        this.owner.register('template:components/x-foo', hbs`{{@debugTemplateInvocationSite.template}} @ L{{@debugTemplateInvocationSite.line}}:C{{@debugTemplateInvocationSite.column}}`);
+        this.owner.register(
+          'template:components/x-foo',
+          hbs`{{@debugTemplateInvocationSite.template}} @ L{{@debugTemplateInvocationSite.line}}:C{{@debugTemplateInvocationSite.column}}`
+        );
 
-        await render(hbs('some-stuff \n\n other stuff <div data-test>{{x-foo}}</div>', { moduleName: 'app/foo/bar.hbs' }));
+        await render(
+          hbs('some-stuff \n\n other stuff <div data-test>{{x-foo}}</div>', {
+            moduleName: 'app/foo/bar.hbs',
+          })
+        );
 
-        assert.equal(this.element.querySelector('[data-test]').textContent, 'app/foo/bar.hbs @ L3:C28');
+        assert.equal(
+          this.element.querySelector('[data-test]').textContent,
+          'app/foo/bar.hbs @ L3:C28'
+        );
       });
 
       test('allows helpers to access the template invocation location', async function(assert) {
-        this.owner.register('helper:invoke-me', helper((params, hash) => {
-          let location = getInvocationLocation(hash);
+        this.owner.register(
+          'helper:invoke-me',
+          helper((params, hash) => {
+            let location = getInvocationLocation(hash);
 
-          assert.step(`${location.template} @ L${location.line}:C${location.column}`);
-        }));
+            assert.step(`${location.template} @ L${location.line}:C${location.column}`);
+          })
+        );
 
-        await render(hbs('some-stuff \n\n other stuff {{invoke-me}}', { moduleName: 'app/foo/bar.hbs' }));
+        await render(
+          hbs('some-stuff \n\n other stuff {{invoke-me}}', { moduleName: 'app/foo/bar.hbs' })
+        );
 
-        assert.verifySteps([
-          'app/foo/bar.hbs @ L3:C13',
-        ]);
+        assert.verifySteps(['app/foo/bar.hbs @ L3:C13']);
       });
 
       test('can determine parent invocation site', async function(assert) {
         assert.expect(1);
 
-        this.owner.register('template:components/foo-bar', hbs('\n {{invoke-me}}', { moduleName: 'app/templates/components/foo-bar.hbs' }));
+        this.owner.register(
+          'template:components/foo-bar',
+          hbs('\n {{invoke-me}}', { moduleName: 'app/templates/components/foo-bar.hbs' })
+        );
 
-        this.owner.register('helper:invoke-me', helper((params, hash) => {
-          let location = getInvocationLocation(hash);
+        this.owner.register(
+          'helper:invoke-me',
+          helper((params, hash) => {
+            let location = getInvocationLocation(hash);
 
-          assert.deepEqual(location, {
-            isTemplateInvocationInfo: true,
-            template: 'app/templates/components/foo-bar.hbs',
-            line: 2,
-            column: 1,
-            parent: {
+            assert.deepEqual(location, {
               isTemplateInvocationInfo: true,
-              template: 'app/templates/bar.hbs',
-              line: 3,
-              column: 13,
-              parent: undefined,
-            }
-          });
-        }));
+              template: 'app/templates/components/foo-bar.hbs',
+              line: 2,
+              column: 1,
+              parent: {
+                isTemplateInvocationInfo: true,
+                template: 'app/templates/bar.hbs',
+                line: 3,
+                column: 13,
+                parent: undefined,
+              },
+            });
+          })
+        );
 
-        await render(hbs('some-stuff \n\n other stuff {{foo-bar}}', { moduleName: 'app/templates/bar.hbs' }));
+        await render(
+          hbs('some-stuff \n\n other stuff {{foo-bar}}', { moduleName: 'app/templates/bar.hbs' })
+        );
       });
 
       test('properly detects dynamic angle bracket component invocations', async function(assert) {
-        this.owner.register('template:components/x-outer', hbs('{{yield (hash foo=(component "x-inner"))}}', { moduleName: 'app/templates/components/x-outer.hbs' }));
-        this.owner.register('template:components/x-inner', hbs('\n    {{invoke-me}}', { moduleName: 'app/templates/components/x-inner.hbs' }));
+        this.owner.register(
+          'template:components/x-outer',
+          hbs('{{yield (hash foo=(component "x-inner"))}}', {
+            moduleName: 'app/templates/components/x-outer.hbs',
+          })
+        );
+        this.owner.register(
+          'template:components/x-inner',
+          hbs('\n    {{invoke-me}}', { moduleName: 'app/templates/components/x-inner.hbs' })
+        );
 
-        this.owner.register('helper:invoke-me', helper((params, hash) => {
-          let location = getInvocationLocation(hash);
+        this.owner.register(
+          'helper:invoke-me',
+          helper((params, hash) => {
+            let location = getInvocationLocation(hash);
 
-          assert.deepEqual(location, {
-            isTemplateInvocationInfo: true,
-            template: 'app/templates/components/x-inner.hbs',
-            line: 2,
-            column: 4,
-            parent: {
+            assert.deepEqual(location, {
               isTemplateInvocationInfo: true,
-              template: 'app/templates/bar.hbs',
-              line: 1,
-              column: 20,
-              parent: undefined,
-            }
-          });
+              template: 'app/templates/components/x-inner.hbs',
+              line: 2,
+              column: 4,
+              parent: {
+                isTemplateInvocationInfo: true,
+                template: 'app/templates/bar.hbs',
+                line: 1,
+                column: 20,
+                parent: undefined,
+              },
+            });
+          })
+        );
 
-        }));
-
-        await render(hbs('<XOuter as |things|>{{things.foo}}</XOuter>', { moduleName: 'app/templates/bar.hbs' }));
+        await render(
+          hbs('<XOuter as |things|>{{things.foo}}</XOuter>', {
+            moduleName: 'app/templates/bar.hbs',
+          })
+        );
       });
     }
   });
 
   module('getInvocationStack', function() {
     test('does not error', async function(assert) {
-      this.owner.register('helper:invoke-me', helper((params, hash) => {
-        let stack = getInvocationStack(hash);
+      this.owner.register(
+        'helper:invoke-me',
+        helper((params, hash) => {
+          let stack = getInvocationStack(hash);
 
-        assert.ok(Array.isArray(stack), 'return value from getInvocationStack is an array');
-      }));
+          assert.ok(Array.isArray(stack), 'return value from getInvocationStack is an array');
+        })
+      );
 
-      await render(hbs('some-stuff \n\n other stuff {{invoke-me}}', { moduleName: 'app/foo/bar.hbs' }));
+      await render(
+        hbs('some-stuff \n\n other stuff {{invoke-me}}', { moduleName: 'app/foo/bar.hbs' })
+      );
     });
 
     if (DEBUG) {
       test('can access simplified stack', async function(assert) {
         assert.expect(1);
 
-        this.owner.register('template:components/foo-bar', hbs('\n {{invoke-me}}', { moduleName: 'app/templates/components/foo-bar.hbs' }));
+        this.owner.register(
+          'template:components/foo-bar',
+          hbs('\n {{invoke-me}}', { moduleName: 'app/templates/components/foo-bar.hbs' })
+        );
 
-        this.owner.register('helper:invoke-me', helper((params, hash) => {
-          let stack = getInvocationStack(hash);
+        this.owner.register(
+          'helper:invoke-me',
+          helper((params, hash) => {
+            let stack = getInvocationStack(hash);
 
-          assert.deepEqual(stack, [
-            'app/templates/components/foo-bar.hbs @ L2:C1',
-            'app/templates/bar.hbs @ L3:C13'
-          ]);
-        }));
+            assert.deepEqual(stack, [
+              'app/templates/components/foo-bar.hbs @ L2:C1',
+              'app/templates/bar.hbs @ L3:C13',
+            ]);
+          })
+        );
 
-        await render(hbs('some-stuff \n\n other stuff {{foo-bar}}', { moduleName: 'app/templates/bar.hbs' }));
+        await render(
+          hbs('some-stuff \n\n other stuff {{foo-bar}}', { moduleName: 'app/templates/bar.hbs' })
+        );
       });
 
       test('can access simplified stack from global (without modifying source helper/component/modifier)', async function(assert) {
         assert.expect(1);
 
-        this.owner.register('template:components/foo-bar', hbs('\n {{invoke-me}}', { moduleName: 'app/templates/components/foo-bar.hbs' }));
+        this.owner.register(
+          'template:components/foo-bar',
+          hbs('\n {{invoke-me}}', { moduleName: 'app/templates/components/foo-bar.hbs' })
+        );
 
-        this.owner.register('helper:invoke-me', helper((params, hash) => {
-          let stack = self._templateInvocationInfo.getInvocationStack(hash);
+        this.owner.register(
+          'helper:invoke-me',
+          helper((params, hash) => {
+            let stack = self._templateInvocationInfo.getInvocationStack(hash);
 
-          assert.deepEqual(stack, [
-            'app/templates/components/foo-bar.hbs @ L2:C1',
-            'app/templates/bar.hbs @ L3:C13'
-          ]);
-        }));
+            assert.deepEqual(stack, [
+              'app/templates/components/foo-bar.hbs @ L2:C1',
+              'app/templates/bar.hbs @ L3:C13',
+            ]);
+          })
+        );
 
-        await render(hbs('some-stuff \n\n other stuff {{foo-bar}}', { moduleName: 'app/templates/bar.hbs' }));
+        await render(
+          hbs('some-stuff \n\n other stuff {{foo-bar}}', { moduleName: 'app/templates/bar.hbs' })
+        );
       });
     }
   });

@@ -25,7 +25,7 @@ module.exports = {
         requireFile: __filename,
         buildUsing: '_buildPlugin',
         params: {},
-      }
+      },
     };
   },
 

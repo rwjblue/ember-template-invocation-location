@@ -3,7 +3,8 @@ import Helper from '@ember/component/helper';
 
 // this is a hard coded value in glimmer-vm:
 // https://github.com/glimmerjs/glimmer-vm/blob/v0.38.0/packages/%40glimmer/runtime/lib/component/curried-component.ts#L6
-const CONTEXTUAL_COMPONENT_FLAG = 'CURRIED COMPONENT DEFINITION [id=6f00feb9-a0ef-4547-99ea-ac328f80acea]';
+const CONTEXTUAL_COMPONENT_FLAG =
+  'CURRIED COMPONENT DEFINITION [id=6f00feb9-a0ef-4547-99ea-ac328f80acea]';
 
 export default Helper.extend({
   compute([name, isBlockParam, value]) {
@@ -27,10 +28,13 @@ export default Helper.extend({
       return true;
     }
 
-    if (owner.resolveRegistration(`component:${name}`) || owner.resolveRegistration(`template:components/${name}`)) {
+    if (
+      owner.resolveRegistration(`component:${name}`) ||
+      owner.resolveRegistration(`template:components/${name}`)
+    ) {
       return true;
     }
 
     return false;
-  }
+  },
 });

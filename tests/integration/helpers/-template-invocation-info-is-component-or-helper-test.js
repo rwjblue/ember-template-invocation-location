@@ -10,13 +10,17 @@ module('Integration | Helper | -template-invocation-info-is-component-or-helper'
   test('returns true when invoking a helper', async function(assert) {
     this.owner.register('helper:foo', helper(function() {}));
 
-    await render(hbs`{{#if (-template-invocation-info-is-component-or-helper 'foo' false foo)}}helper found!{{/if}}`);
+    await render(
+      hbs`{{#if (-template-invocation-info-is-component-or-helper 'foo' false foo)}}helper found!{{/if}}`
+    );
 
     assert.equal(this.element.textContent, 'helper found!');
   });
 
   test('returns false when helper or component do not exist', async function(assert) {
-    await render(hbs`{{#if (-template-invocation-info-is-component-or-helper 'foo' false foo)}}helper found!{{/if}}`);
+    await render(
+      hbs`{{#if (-template-invocation-info-is-component-or-helper 'foo' false foo)}}helper found!{{/if}}`
+    );
 
     assert.equal(this.element.textContent, '');
   });

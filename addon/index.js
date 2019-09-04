@@ -4,7 +4,10 @@ const LOCATION_PROPERTY = 'debugTemplateInvocationSite'; // must match index.js 
 
 export function getInvocationLocation(locationHolder) {
   if (DEBUG) {
-    assert(`Expected ${locationHolder} to include the custom template invocation information but it was missing. Please confirm you have ember-template-invocation-location setup properly in your package.json`, locationHolder[LOCATION_PROPERTY]);
+    assert(
+      `Expected ${locationHolder} to include the custom template invocation information but it was missing. Please confirm you have ember-template-invocation-location setup properly in your package.json`,
+      locationHolder[LOCATION_PROPERTY]
+    );
 
     let locationInfo = locationHolder[LOCATION_PROPERTY];
 
